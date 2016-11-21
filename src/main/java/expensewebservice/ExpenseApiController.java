@@ -49,7 +49,7 @@ public class ExpenseApiController {
 
     @RequestMapping(value="/api/expense", method=RequestMethod.POST)
     public ResponseEntity<?> post(
-        @RequestHeader(value="Authentication") String auth) throws MalformedURLException, ParseException, BadJOSEException, JOSEException {
+        @RequestHeader(value="Authorization") String auth) throws MalformedURLException, ParseException, BadJOSEException, JOSEException {
         
         try {
             ConfigurableJWTProcessor jwtProcessor = new DefaultJWTProcessor();
