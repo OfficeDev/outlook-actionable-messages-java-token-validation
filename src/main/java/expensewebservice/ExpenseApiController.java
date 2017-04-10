@@ -35,11 +35,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
 
-import com.nimbusds.jose.*;
-import com.nimbusds.jose.jwk.source.*;
-import com.nimbusds.jose.proc.*;
-import com.nimbusds.jwt.*;
-import com.nimbusds.jwt.proc.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -49,69 +44,33 @@ public class ExpenseApiController {
 
     @RequestMapping(value="/api/expense", method=RequestMethod.POST)
     public ResponseEntity<?> post(
-        @RequestHeader(value="Authorization") String auth) throws MalformedURLException, ParseException, BadJOSEException, JOSEException {
+        @RequestHeader(value="Authorization") String auth) {
         
         try {
-            ConfigurableJWTProcessor jwtProcessor = new DefaultJWTProcessor();
-            
-            OpenIdMetadata config = new OpenIdMetadata("https://substrate.office.com/sts/common/.well-known/openid-configuration");
-            JWKSource keySource = new RemoteJWKSet(new URL(config.getJsonWebKeyUrl()));
-            
             String[] tokens = auth.split(" ");
-            JWT token = JWTParser.parse(tokens[1]);
-            JWSAlgorithm expectedJWSAlg = JWSAlgorithm.parse(token.getHeader().getAlgorithm().getName());
-        
-            JWSKeySelector keySelector = new JWSVerificationKeySelector(expectedJWSAlg, keySource);
-            jwtProcessor.setJWSKeySelector(keySelector);
-            
-            SecurityContext ctx = null;
-            JWTClaimsSet claimsSet = jwtProcessor.process(tokens[1], ctx);
-            
-            if (!verifyClaims(claimsSet)) {
-                return new ResponseEntity<>("Verification failed.", HttpStatus.BAD_REQUEST);
-            }
-            
-            return new ResponseEntity<>(claimsSet.getIssuer(), HttpStatus.OK);
-        }
-        catch (Exception ex) {
-            return new ResponseEntity<>(ex.toString(), HttpStatus.BAD_REQUEST);
-        }
-    }
-    
-    private Boolean verifyClaims(JWTClaimsSet claims) {
-        try {
-            if (!Objects.equals(claims.getIssuer(), "https://substrate.office.com/sts/")) {
-                return false;
-            }
-            
-            List<String> audiences = claims.getAudience();
-            if (audiences.size() != 1) {
-                return false;
-            }
+            ActionableMessageTokenValidator validator = new ActionableMessageTokenValidator();
             
             // Replace [WEB SERVICE URL] with your service domain URL.
             // For example, if the service URL is https://api.contoso.com/finance/expense?id=1234,
             // then replace [WEB SERVICE URL] with https://api.contoso.com
-            if (!Objects.equals(audiences.get(0), "[WEB SERVICE URL]")) {
-                return false;
+            ActionableMessageTokenValidationResult result = validator.validateToken(tokens[1], "[WEB SERVICE URL]");
+            
+            if (!result.getValidationSucceeded()) {
+                return new ResponseEntity<>(result.getError().toString(), HttpStatus.UNAUTHORIZED);
+            } 
+            
+            // We have a valid token. We will verify the sender and the action performer. 
+            // In this example, we verify that the email is sent by Contoso LOB system
+            // and the action performer has to be someone with @contoso.com email.
+            if (!Objects.equals(result.getSender().toLowerCase(), "lob@contoso.com") ||
+                !result.getSender().toLowerCase().endsWith("@contoso.com")) {
+                return new ResponseEntity<>("Invalid sender or the action performer is not allowed.", HttpStatus.INTERNAL_SERVER_ERROR);
             }
             
-            if (!Objects.equals(claims.getStringClaim("appid"), "48af08dc-f6d2-435f-b2a7-069abd99c086")) {
-                return false;
-            }
-            
-            // sender claim will contain the email address of the sender.
-            // Validate that the email is sent by your organization.
-            String sender = claims.getStringClaim("sender");
-            
-            // subject claim will contain the email of the person who performed the action.
-            // Validate that the person has the priviledge to perform this action.
-            String subject = claims.getSubject();
+            return new ResponseEntity<>("validation succeeded", HttpStatus.OK);
         }
         catch (Exception ex) {
-            return false;
+            return new ResponseEntity<>(ex.toString(), HttpStatus.BAD_REQUEST);
         }
-        
-        return true;
     }
 }
