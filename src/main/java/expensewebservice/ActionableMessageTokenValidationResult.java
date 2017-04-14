@@ -28,46 +28,83 @@
 
 package expensewebservice;
 
+/**
+* Result from token validation.
+*/
 public class ActionableMessageTokenValidationResult {
     private Boolean validationSucceeded;
     private String sender;
     private String actionPerformer;
     private Exception error;
-     
+    
+    /**
+    * Constructor.
+    */
     public ActionableMessageTokenValidationResult() {
         validationSucceeded = false;
         sender = "";
         actionPerformer = "";
     }
     
+    /**
+    * Gets the flag that indicates if the validation succeeded.
+    * @return Boolean true if the validation succeeded; else false.
+    */
     public Boolean getValidationSucceeded() {
         return validationSucceeded;
     }
     
+    /**
+    * Sets the flag that indicates if the validation succeeded.
+    */
     public void setValidationSucceeded(Boolean value) {
         validationSucceeded = value;
     }
     
+    /**
+    * Gets the value of the sender.
+    * @return String The value of the sender.
+    */
     public String getSender() {
         return sender;
     }
     
+    /**
+    * Sets the value of the sender.
+    * @param value The value of the sender.
+    */
     public void setSender(String value) {
         sender = value;
     }
     
+    /**
+    * Gets the value of the action performer.
+    * @return String The value of the action performer.
+    */
     public String getActionPerformer() {
         return actionPerformer;
     }
     
+    /**
+    * Sets the value of the action performer.
+    * @param value The value of the action performer.
+    */
     public void setActionPerformer(String value) {
         actionPerformer = value;
     }
     
+    /**
+    * Gets the exception object if the validation failed.
+    * @return Exception The exception object which causes the validation to fail.
+    */
     public Exception getError() {
         return error;
     }
     
+    /**
+    * Sets the exception object.
+    * @param value The exception object.
+    */
     public void setError(Exception value) {
         error = value;
     }

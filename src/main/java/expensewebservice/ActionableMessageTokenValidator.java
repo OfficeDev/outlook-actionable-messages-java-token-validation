@@ -48,32 +48,53 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+/**
+* Token validator for actionable message.
+*/
 public class ActionableMessageTokenValidator {
+    private static final String O365_APP_ID = "48af08dc-f6d2-435f-b2a7-069abd99c086";
+    private static final String O365_OPENID_METADATA_URL = "https://substrate.office.com/sts/common/.well-known/openid-configuration";
+    private static final String O365_TOKEN_ISSUER = "https://substrate.office.com/sts/";
+
+    /**
+    * Constructor.
+    */
     public ActionableMessageTokenValidator() {
     }
     
-    public ActionableMessageTokenValidationResult validateToken(String token, String targetUrl) throws IOException, JSONException, ParseException, MalformedURLException, BadJOSEException, JOSEException {
-        ConfigurableJWTProcessor jwtProcessor = new DefaultJWTProcessor();
-        OpenIdMetadata config = new OpenIdMetadata("https://substrate.office.com/sts/common/.well-known/openid-configuration");
+    /**
+    * Validates an actionable message token.
+    * @param token The token issued by Microsoft.
+    * @param targetUrl The target URL expected in the token.
+    * @return ActionableMessageTokenValidationResult The result of the validation.
+    */
+    public ActionableMessageTokenValidationResult validateToken(String token, String targetUrl) throws IOException, ParseException, MalformedURLException, BadJOSEException, JOSEException {
+        OpenIdMetadata config = new OpenIdMetadata(O365_OPENID_METADATA_URL);
         JWT jwt = JWTParser.parse(token);
         JWSAlgorithm expectedJWSAlg = JWSAlgorithm.parse(jwt.getHeader().getAlgorithm().getName());
     
         JWKSource keySource = new RemoteJWKSet(new URL(config.getJsonWebKeyUrl()));
         JWSKeySelector keySelector = new JWSVerificationKeySelector(expectedJWSAlg, keySource);
+        
+        ConfigurableJWTProcessor jwtProcessor = new DefaultJWTProcessor();
         jwtProcessor.setJWSKeySelector(keySelector);
         
         SecurityContext ctx = null;
         JWTClaimsSet claimsSet = jwtProcessor.process(token, ctx);
-        ActionableMessageTokenValidationResult result = verifyClaims(claimsSet, targetUrl);
-        
-        return result;
+        return verifyClaims(claimsSet, targetUrl);
     }
 
+    /**
+    * Validates a set of claims in a JWT token.
+    * @param claims The claims set to validate.
+    * @param targetUrl The expected URL in the audience claim.
+    * @return ActioanbleMessageTokenValidationResult The result of the validation.
+    */
     private ActionableMessageTokenValidationResult verifyClaims(JWTClaimsSet claims, String targetUrl) {
         ActionableMessageTokenValidationResult result = new ActionableMessageTokenValidationResult();
         
         try {
-            if (!Objects.equals(claims.getIssuer().toLowerCase(), "https://substrate.office.com/sts/")) {
+            if (!Objects.equals(claims.getIssuer().toLowerCase(), O365_TOKEN_ISSUER)) {
                 result.setError(new IllegalStateException("Invalid token issuer."));
                 return result;
             }
@@ -89,7 +110,7 @@ public class ActionableMessageTokenValidator {
                 return result;
             }
             
-            if (!Objects.equals(claims.getStringClaim("appid").toLowerCase(), "48af08dc-f6d2-435f-b2a7-069abd99c086")) {
+            if (!Objects.equals(claims.getStringClaim("appid").toLowerCase(), O365_APP_ID)) {
                 result.setError(new IllegalStateException("Invalid token appid."));
                 return result;
             }

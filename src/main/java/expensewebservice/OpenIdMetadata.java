@@ -40,21 +40,41 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+/**
+* Represents an OpenID configuration.
+*/
 public class OpenIdMetadata {
     private JSONObject config;
     
+    /**
+    * Constructor.
+    * @param url The URL to the Open ID configuration.
+    */
     public OpenIdMetadata(String url) throws IOException, JSONException {
         getOpenIdConfiguration(url);
     }
     
+    /**
+    * Gets the URL of the JSON web key set in the configuration.
+    * @return String The URL of the JSON web key set.
+    */
     public String getJsonWebKeyUrl() {
         return config.get("jwks_uri").toString();
     }
     
+    /**
+    * Gets the Open ID configuration.
+    * @param url The URL of the Open ID configuration.
+    */
     private void getOpenIdConfiguration(String url) throws IOException, JSONException {
         config = getJsonFromUrl(url);
     }
     
+    /**
+    * Reads the JSON returned by the URL.
+    * @param url The URL to read the JSON from.
+    * @return JSONObject The JSON object.
+    */
     private JSONObject getJsonFromUrl(String url) throws IOException, JSONException {
         BufferedReader rd = new BufferedReader(new InputStreamReader(new URL(url).openStream()));
         StringBuilder sb = new StringBuilder();
