@@ -21,12 +21,12 @@ Services can send actionable messages to users to complete simple tasks against 
             
             // We have a valid token. We will verify the sender and the action performer. 
             // You should replace the code below with your own validation logic.
-            // In this example, we verify that the email is sent by Contoso LOB system
+            // In this example, we verify that the email is sent by expense@contoso.com
             // and the action performer has to be someone with @contoso.com email.
             //
             // You should also return the CARD-ACTION-STATUS header in the response.
             // The value of the header will be displayed to the user.
-            if (!Objects.equals(result.getSender().toLowerCase(), "lob@contoso.com") ||
+            if (!Objects.equals(result.getSender().toLowerCase(), "expense@contoso.com") ||
                 !result.getActionPerformer().toLowerCase().endsWith("@contoso.com")) {
                 HttpHeaders headers = new HttpHeaders();
                 headers.add("CARD-ACTION-STATUS", "Invalid sender or the action performer is not allowed.");
