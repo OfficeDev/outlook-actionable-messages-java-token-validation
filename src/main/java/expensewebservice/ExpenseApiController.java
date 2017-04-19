@@ -64,7 +64,7 @@ public class ExpenseApiController {
         //
         // You should also return the CARD-ACTION-STATUS header in the response.
         // The value of the header will be displayed to the user.
-        if (!Objects.equals(result.getSender().toLowerCase(), "lob@contoso.com") ||
+        if (!result.getSender().equalsIgnoreCase("lob@contoso.com") ||
             !result.getActionPerformer().toLowerCase().endsWith("@contoso.com")) {
             HttpHeaders headers = new HttpHeaders();
             headers.add("CARD-ACTION-STATUS", "Invalid sender or the action performer is not allowed.");
@@ -90,6 +90,11 @@ public class ExpenseApiController {
             }
 
             ActionableMessageTokenValidator validator = new ActionableMessageTokenValidator();
+
+            // ValidateToken will verify the following
+            // 1. The token is issued by Microsoft and its digital signature is valid.
+            // 2. The token has not expired.
+            // 3. The audience claim matches the service domain URL.
             result = validator.validateToken(tokens[1], targetUrl);
         }
         catch (Exception ex) {
