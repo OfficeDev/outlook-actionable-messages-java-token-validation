@@ -6,8 +6,8 @@ Services can send actionable messages to users to complete simple tasks against 
         public ResponseEntity<?> post(
             @RequestHeader(value="Authorization") String auth) {
             
-            // We first validate the Microsoft issued JWT token 
-            // and the target endpoint matches with the audience of the token (“aud” claim)
+            // We first validate the Microsoft issued JWT token,
+            // and verify that the target endpoint matches with the audience of the token (“aud” claim)
             // Replace https://api.contoso.com with your service target URL.
             // For example, if the service URL is https://api.xyz.com/finance/expense?id=1234,
             // then replace https://api.contoso.com with https://api.xyz.com
@@ -29,8 +29,8 @@ Services can send actionable messages to users to complete simple tasks against 
             //
             // You should also return the CARD-ACTION-STATUS header in the response.
             // The value of the header will be displayed to the user.
-            if (!Objects.equals(result.getSender().toLowerCase(), "expense@contoso.com") ||
-                 Objects.equals(result.getActionPerformer().toLowerCase(), "john@contoso.com")) {
+            if (!result.getSender().equalsIgnoreCase("expense@contoso.com") ||
+                !result.getActionPerformer().equalsIgnoreCase("john@contoso.com")) {
                 HttpHeaders headers = new HttpHeaders();
                 headers.add("CARD-ACTION-STATUS", "Invalid sender or the action performer is not allowed.");
                 return new ResponseEntity<>(null, headers, HttpStatus.FORBIDDEN);
