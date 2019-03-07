@@ -1,3 +1,18 @@
+---
+topic: sample
+products:
+- Outlook
+- Office 365
+languages:
+- Java
+extensions:
+  contentType: samples
+  technologies:
+  - Actionable messages
+  platforms:
+  - Android
+  createdDate: 11/17/2016 2:41:50 PM
+---
 # Action Request Token Verification Java Sample
 
 Services can send actionable messages to users to complete simple tasks against their services. When a user performs one of the actions in a message, an action request will be sent by Microsoft to the service. The request from Microsoft will contain a bearer token in the authorization header. This code sample shows how to verify the token to ensure the action request is from Microsoft, and use the claims in the token to validate the request.
